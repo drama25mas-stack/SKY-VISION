@@ -55,7 +55,14 @@ jobs:
           npx cap sync android
       - name: Add and verify Android location permissions
         run: |
-          sed -i '/<application/i\\    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />' android/app/src/main/AndroidManifest.xml
+          python - <<'PY'
+          p='android/app/src/main/AndroidManifest.xml'
+          s=open(p).read()
+          permissions='    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n'
+          if 'ACCESS_FINE_LOCATION' not in s:
+              s=s.replace('<application', permissions+'    <application', 1)
+          open(p,'w').write(s)
+          PY
           grep -q "ACCESS_FINE_LOCATION" android/app/src/main/AndroidManifest.xml
           grep -q "ACCESS_COARSE_LOCATION" android/app/src/main/AndroidManifest.xml
       - name: Build debug APK
